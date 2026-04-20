@@ -325,19 +325,19 @@ private String selectedKode = "";
      }
          
          try {
-             Connection conn = Koneksi.getConnection();
-             String sqlEdit = "UPDATE suplier SET nama_suplier=?, alamat=?, no_telp=? WHERE kode_suplier=?";
-             PreparedStatement ps = conn.prepareStatement(sqlEdit);
-             ps.setString(1, txtNamaSuplier.getText());
-             ps.setString(2, txtAlamatSuplier.getText());
-             ps.setString(3, txtNoTelp.getText());
-             ps.setString(4, txtKodeSuplier.getText());
-             ps.executeUpdate();
-             JOptionPane.showMessageDialog(this, "Berhasil Update!");
-             loadSuplier();
-             bersihForm();
-             conn.close();
-         } catch (Exception e) {
+             try (Connection conn = Koneksi.getConnection()) {
+                 String sqlEdit = "UPDATE suplier SET nama_suplier=?, alamat=?, no_telp=? WHERE kode_suplier=?";
+                 PreparedStatement ps = conn.prepareStatement(sqlEdit);
+                 ps.setString(1, txtNamaSuplier.getText());
+                 ps.setString(2, txtAlamatSuplier.getText());
+                 ps.setString(3, txtNoTelp.getText());
+                 ps.setString(4, txtKodeSuplier.getText());
+                 ps.executeUpdate();
+                 JOptionPane.showMessageDialog(this, "Berhasil Update!");
+                 loadSuplier();
+                 bersihForm();
+             }
+         } catch (SQLException e) {
              JOptionPane.showMessageDialog(this, "Error Edit : " + e.getMessage());
          }
     }//GEN-LAST:event_btnEditActionPerformed
