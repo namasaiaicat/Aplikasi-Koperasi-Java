@@ -30,7 +30,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
     public OrderPenjualan() {
         initComponents();
         
-        modelOrder = new DefaultTableModel(new Object[]{"Kode Order", "Tanggal", "Kode Pelanggan", "Kode Barang", "Nama Barang", "Harga Jual", "Jumlah", "Total Harga"}, 0) {
+        modelOrder = new DefaultTableModel(new Object[]{"Kode Order", "Tanggal", "Kode Pelanggan", "Kode Barang", "Harga Jual", "Jumlah", "Total Harga"}, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
@@ -53,9 +53,9 @@ public class OrderPenjualan extends javax.swing.JFrame {
                 modelOrder.addRow(new Object[] {
                     rs.getString("kode_order"),
                     rs.getString("tgl_order"),
-                    rs.getString("kode_suplier"),
+                    rs.getString("kode_pelanggan"),
                     rs.getString("kode_barang"),
-                    rs.getInt("harga_beli"),
+                    rs.getInt("harga_jual"),
                     rs.getInt("jumlah"),
                     rs.getInt("total_harga"),
                 });
@@ -70,11 +70,11 @@ public class OrderPenjualan extends javax.swing.JFrame {
         cbxKodePelanggan.removeAllItems();
         try {
             try (Connection conn = Koneksi.getConnection()) {
-                String sql = "SELECT kode_suplier, nama_suplier FROM suplier";
+                String sql = "SELECT kode_pelanggan, nama_pelanggan FROM pelanggan";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
-                    cbxKodePelanggan.addItem(rs.getString("kode_suplier") + " - " + rs.getString("nama_suplier"));
+                    cbxKodePelanggan.addItem(rs.getString("kode_pelanggan") + " - " + rs.getString("nama_pelanggan"));
                 }
                 conn.close();
             }
@@ -356,7 +356,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
         
     try {
         Connection conn = Koneksi.getConnection();
-        String sql = "INSERT INTO order_penjualan (kode_order, kode_baranag, tgl_order, kode_pelanggan, harga_jual, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO order_penjualan (kode_order, kode_barang, tgl_order, kode_pelanggan, harga_jual, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, txtKodeOrder.getText());
         ps.setString(2, kodeBarang);
@@ -424,8 +424,8 @@ public class OrderPenjualan extends javax.swing.JFrame {
             ps.setString(3, kodePelanggan);
             ps.setInt(4, Integer.parseInt(txtHargaJual.getText()));
             ps.setInt(5, Integer.parseInt(txtJumlah.getText()));
-            ps.setInt(5, Integer.parseInt(txtTotalHarga.getText()));
-            ps.setString(6, txtKodeOrder.getText());
+            ps.setInt(6, Integer.parseInt(txtTotalHarga.getText()));
+            ps.setString(7, txtKodeOrder.getText());
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Data TerUpdate!");
             loadPelanggan();
