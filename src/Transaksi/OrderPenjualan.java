@@ -46,7 +46,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
         try {
             Connection conn = Koneksi.getConnection();
             modelOrder.setRowCount(0);
-            String sql = "SELECT * FROM order_pembelian";
+            String sql = "SELECT * FROM order_penjualan";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -378,7 +378,28 @@ public class OrderPenjualan extends javax.swing.JFrame {
     }//GEN-LAST:event_btnTambahActionPerformed
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
+    if("".equals(selectedKode)) {
+        JOptionPane.showMessageDialog(this, "Pilih data!");
+    }
     
+    int confirm = JOptionPane.showConfirmDialog(this, "Yakin Hapus?");
+    if (confirm == JOptionPane.YES_OPTION) {
+        try {
+            Connection conn = Koneksi.getConnection();
+            String sql = "DELETE FROM order_penjualan WHERE kode_order=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, selectedKode);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Berhasil Dihapus!");
+            loadPelanggan();
+            loadBarang();
+            loadOrder();
+            bersihForm();
+            conn.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal Hapus! : " + e.getMessage());
+        }
+    }
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -411,6 +432,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
             loadBarang();
             loadOrder();
             bersihForm();
+            conn.close();
         }
     } catch (Exception e) {
      JOptionPane.showMessageDialog(this, "Gagal Update Data ! : " + e.getMessage());
