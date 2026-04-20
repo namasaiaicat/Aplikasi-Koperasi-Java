@@ -46,22 +46,22 @@ public class OrderPembelian extends javax.swing.JFrame {
         modelOrder.setRowCount(0);
 
         try {
-            Connection conn = Koneksi.getConnection();
-            String sql = "SELECT * FROM order_pembelian";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                modelOrder.addRow(new Object[] {
-                    rs.getString("kode_order"),
-                    rs.getString("tgl_order"),
-                    rs.getString("kode_suplier"),
-                    rs.getString("kode_barang"),
-                    rs.getInt("harga_beli"),
-                    rs.getInt("jumlah"),
-                    rs.getInt("total_harga"),
-                });
+            try (Connection conn = Koneksi.getConnection()) {
+                String sql = "SELECT * FROM order_pembelian";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    modelOrder.addRow(new Object[] {
+                        rs.getString("kode_order"),
+                        rs.getString("tgl_order"),
+                        rs.getString("kode_suplier"),
+                        rs.getString("kode_barang"),
+                        rs.getInt("harga_beli"),
+                        rs.getInt("jumlah"),
+                        rs.getInt("total_harga"),
+                    });
+                }
             }
-            conn.close();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal Load : " + e.getMessage());
         }
@@ -368,22 +368,23 @@ public class OrderPembelian extends javax.swing.JFrame {
     String kodeSuplier = ((String) cbxKodeSuplier.getSelectedItem()).split(" - ")[0];
         
     try {
-        Connection conn = Koneksi.getConnection();
-        String sql = "INSERT INTO order_pembelian (kode_order, kode_barang, tgl_order, kode_suplier, harga_beli, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, txtKodeOrder.getText());
-        ps.setString(2, kodeBarang);
-        ps.setString(3, txtTanggal.getText());
-        ps.setString(4, kodeSuplier);
-        ps.setInt(5, Integer.parseInt(txtHargaBeli.getText()));
-        ps.setInt(6, Integer.parseInt(txtJumlah.getText()));
-        ps.setInt(7, Integer.parseInt(txtTotalHarga.getText()));
-        ps.executeUpdate();
-        JOptionPane.showMessageDialog(this, "Berhasil Tambah!");
-        loadOrder();
-        loadSuplier();
-        loadBarang();
-        conn.close();
+        try (Connection conn = Koneksi.getConnection()) {
+            String sql = "INSERT INTO order_pembelian (kode_order, kode_barang, tgl_order, kode_suplier, harga_beli, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, txtKodeOrder.getText());
+            ps.setString(2, kodeBarang);
+            ps.setString(3, txtTanggal.getText());
+            ps.setString(4, kodeSuplier);
+            ps.setInt(5, Integer.parseInt(txtHargaBeli.getText()));
+            ps.setInt(6, Integer.parseInt(txtJumlah.getText()));
+            ps.setInt(7, Integer.parseInt(txtTotalHarga.getText()));
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Berhasil Tambah!");
+            loadOrder();
+            loadSuplier();
+            bersihForm();
+            loadBarang();
+        }
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(this, "Gagal Tambah : " + e.getMessage());
     }
@@ -398,7 +399,7 @@ public class OrderPembelian extends javax.swing.JFrame {
     if (confirm == JOptionPane.YES_OPTION) {
         try {
             Connection conn = Koneksi.getConnection();
-            String sql = "DELETE FROM order_pembelian WHERE selectedKode = ?";
+            String sql = "DELETE FROM order_pembelian WHERE kode_order = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, selectedKode);
             ps.executeUpdate();
@@ -414,11 +415,35 @@ public class OrderPembelian extends javax.swing.JFrame {
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-    // TODO add your handling code here:
+    bersihForm();    // TODO add your handling code here:
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-
+    
+        String kodeBarang = ((String) cbxKodeBarang.getSelectedItem()).split(" - ")[0];
+        String kodeSuplier = ((String) cbxKodeSuplier.getSelectedItem()).split(" - ")[0];
+       
+        try {
+            try (Connection conn = Koneksi.getConnection()) {
+                String sql = "UPDATE order_pembelian SET kode_barang=?, tgl_order=?, kode_suplier=?, harga_beli=?, total_harga=? WHERE kode_order=?";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, kodeBarang);
+                ps.setString(2, txtTanggal.getText());
+                ps.setString(3, kodeSuplier);
+                ps.setString(4, txtHargaBeli.getText());
+                ps.setString(5, txtTotalHarga.getText());
+                ps.setString(6, txtKodeOrder.getText());
+                ps.executeUpdate();
+                JOptionPane.showMessageDialog(this, "Update Berhasil!");
+                loadBarang();
+                loadSuplier();
+                loadOrder();
+                bersihForm();
+                conn.close();
+            }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Update Gagal! : " + e.getMessage());
+    }
     }//GEN-LAST:event_btnEditActionPerformed
 
     private void cbxKodeBarangItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbxKodeBarangItemStateChanged
