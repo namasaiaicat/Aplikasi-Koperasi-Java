@@ -30,14 +30,14 @@ public class OrderPenjualan extends javax.swing.JFrame {
     public OrderPenjualan() {
         initComponents();
         
-        modelOrder = new DefaultTableModel(new Object[]{"Kode Order", "Tanggal", "Kode Suplier", "Kode Barang", "Nama Barang", "Harga Beli", "Jumlah", "Total Harga"}, 0) {
+        modelOrder = new DefaultTableModel(new Object[]{"Kode Order", "Tanggal", "Kode Pelanggan", "Kode Barang", "Nama Barang", "Harga Jual", "Jumlah", "Total Harga"}, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
         tblOrder.setModel(modelOrder);
         loadOrder();
         loadBarang();
-        loadSuplier();
+        loadPelanggan();
         
        txtTanggal.setText(LocalDate.now().toString());
     }
@@ -66,15 +66,15 @@ public class OrderPenjualan extends javax.swing.JFrame {
         }
     }
     
-    private void loadSuplier() {
-        cbxKodeSuplier.removeAllItems();
+    private void loadPelanggan() {
+        cbxKodePelanggan.removeAllItems();
         try {
             try (Connection conn = Koneksi.getConnection()) {
                 String sql = "SELECT kode_suplier, nama_suplier FROM suplier";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
-                    cbxKodeSuplier.addItem(rs.getString("kode_suplier") + " - " + rs.getString("nama_suplier"));
+                    cbxKodePelanggan.addItem(rs.getString("kode_suplier") + " - " + rs.getString("nama_suplier"));
                 }
                 conn.close();
             }
@@ -103,25 +103,25 @@ public class OrderPenjualan extends javax.swing.JFrame {
     private void hitungTotal() {
         try {
             int jumlah = Integer.parseInt(txtJumlah.getText());
-            int harga = Integer.parseInt(txtHargaBeli.getText());
+            int harga = Integer.parseInt(txtHargaJual.getText());
             txtTotalHarga.setText(String.valueOf(jumlah * harga));
         } catch (NumberFormatException e) {
             txtTotalHarga.setText("0");
         }
     }
     
-    private void cbxOtomatisIsiHargaBeli() {
+    private void cbxOtomatisIsiHargaJual() {
         String selected = (String) cbxKodeBarang.getSelectedItem();
         if (selected == null) return;
         String kode = selected.split(" - ")[0];
         try {
             try (Connection conn = Koneksi.getConnection()) {
-                String sql = "SELECT harga_beli FROM barang WHERE kode_barang=?";
+                String sql = "SELECT harga_jual FROM barang WHERE kode_barang=?";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, kode);
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()) {
-                    txtHargaBeli.setText(String.valueOf(rs.getInt("harga_beli")));
+                    txtHargaJual.setText(String.valueOf(rs.getInt("harga_jual")));
                     hitungTotal();
                 }
             }
@@ -130,14 +130,10 @@ public class OrderPenjualan extends javax.swing.JFrame {
         }
     } 
     
-    private void tambahOrderPembelian() {
-        
-    }
-    
     private void bersihForm() {
         txtKodeOrder.setText("");
         txtTanggal.setText(LocalDate.now().toString());
-        txtHargaBeli.setText("");
+        txtHargaJual.setText("");
         txtTotalHarga.setText("");
         txtJumlah.setText("");
         txtTotalHarga.setText("");
@@ -161,12 +157,12 @@ public class OrderPenjualan extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         txtTanggal = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        cbxKodeSuplier = new javax.swing.JComboBox<>();
+        cbxKodePelanggan = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
         cbxKodeBarang = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        txtHargaBeli = new javax.swing.JTextField();
+        txtHargaJual = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         txtJumlah = new javax.swing.JTextField();
         txtTotalHarga = new javax.swing.JTextField();
@@ -192,15 +188,20 @@ public class OrderPenjualan extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tblOrder.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblOrderMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblOrder);
 
         jLabel2.setText("Kode Order");
 
         jLabel3.setText("Tanggal");
 
-        cbxKodeSuplier.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbxKodePelanggan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jLabel4.setText("Kode Suplier");
+        jLabel4.setText("Kode Pelanggan");
 
         cbxKodeBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbxKodeBarang.addItemListener(new java.awt.event.ItemListener() {
@@ -213,9 +214,9 @@ public class OrderPenjualan extends javax.swing.JFrame {
 
         jLabel6.setText("Jumlah");
 
-        txtHargaBeli.setEnabled(false);
+        txtHargaJual.setEnabled(false);
 
-        jLabel7.setText("Harga Beli");
+        jLabel7.setText("Harga Jual");
 
         txtJumlah.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -270,11 +271,11 @@ public class OrderPenjualan extends javax.swing.JFrame {
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtTanggal, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
                     .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cbxKodeSuplier, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbxKodePelanggan, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cbxKodeBarang, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtHargaBeli)
+                    .addComponent(txtHargaJual)
                     .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtJumlah, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
                     .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -310,7 +311,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cbxKodeSuplier, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cbxKodePelanggan, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -318,7 +319,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(txtHargaBeli, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtHargaJual, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -338,7 +339,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(82, 82, 82)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 621, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(68, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
 
         pack();
@@ -351,26 +352,33 @@ public class OrderPenjualan extends javax.swing.JFrame {
     }
     
     String kodeBarang = ((String) cbxKodeBarang.getSelectedItem()).split(" - ")[0];
-    String kodeSuplier = ((String) cbxKodeSuplier.getSelectedItem()).split(" - ")[0];
+    String kodePelanggan = ((String) cbxKodePelanggan.getSelectedItem()).split(" - ")[0];
         
     try {
         Connection conn = Koneksi.getConnection();
-        String sql = "INSERT INTO order_pembelian (kode_order, tgl_order, kode_suplier)";
+        String sql = "INSERT INTO order_penjualan (kode_order, kode_baranag, tgl_order, kode_pelanggan, harga_jual, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, txtKodeOrder.getText());
         ps.setString(2, kodeBarang);
         ps.setString(3, txtTanggal.getText());
-        ps.setString(4, kodeSuplier);
-        ps.setInt(5, Integer.parseInt(txtHargaBeli.getText()));
+        ps.setString(4, kodePelanggan);
+        ps.setInt(5, Integer.parseInt(txtHargaJual.getText()));
         ps.setInt(6, Integer.parseInt(txtJumlah.getText()));
         ps.setInt(7, Integer.parseInt(txtTotalHarga.getText()));
+        ps.executeUpdate();
+        JOptionPane.showMessageDialog(this, "Berhasil Tambah!");
+        loadBarang();
+        loadPelanggan();
+        loadOrder();
+        bersihForm();
+        conn.close();
     } catch (SQLException e) {
         JOptionPane.showMessageDialog(this, "Gagal Tambah : " + e.getMessage());
     }
     }//GEN-LAST:event_btnTambahActionPerformed
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
-
+    
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -378,16 +386,55 @@ public class OrderPenjualan extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-
+    if (txtKodeOrder.getText().isEmpty() || txtTanggal.getText().isEmpty() || txtJumlah.getText().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Field Harus Diisi!");
+        return;
+    }
+    
+    String kodeBarang = ((String) cbxKodeBarang.getSelectedItem()).split(" - ")[0];
+    String kodePelanggan = ((String) cbxKodePelanggan.getSelectedItem()).split(" - ")[0];
+    
+    try {
+        try (Connection conn = Koneksi.getConnection()) {
+            String sql = "UPDATE order_penjualan SET kode_barang=?, tgl_order=?, kode_pelanggan=?, harga_jual=?, jumlah=?, total_harga=? WHERE kode_order=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, kodeBarang);
+            ps.setString(2, txtTanggal.getText());
+            ps.setString(3, kodePelanggan);
+            ps.setInt(4, Integer.parseInt(txtHargaJual.getText()));
+            ps.setInt(5, Integer.parseInt(txtJumlah.getText()));
+            ps.setInt(5, Integer.parseInt(txtTotalHarga.getText()));
+            ps.setString(6, txtKodeOrder.getText());
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Data TerUpdate!");
+            loadPelanggan();
+            loadBarang();
+            loadOrder();
+            bersihForm();
+        }
+    } catch (Exception e) {
+     JOptionPane.showMessageDialog(this, "Gagal Update Data ! : " + e.getMessage());
+    }
     }//GEN-LAST:event_btnEditActionPerformed
 
     private void cbxKodeBarangItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbxKodeBarangItemStateChanged
-    cbxOtomatisIsiHargaBeli();        // TODO add your handling code here:
+    cbxOtomatisIsiHargaJual();  
     }//GEN-LAST:event_cbxKodeBarangItemStateChanged
 
     private void txtJumlahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtJumlahActionPerformed
     hitungTotal();        // TODO add your handling code here:
     }//GEN-LAST:event_txtJumlahActionPerformed
+
+    private void tblOrderMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblOrderMouseClicked
+    int row = tblOrder.getSelectedRow();
+    
+    selectedKode = modelOrder.getValueAt(row, 0).toString();
+    txtKodeOrder.setText(selectedKode);
+    txtTanggal.setText(modelOrder.getValueAt(row, 1).toString());
+    txtHargaJual.setText(modelOrder.getValueAt(row, 4).toString());
+    txtJumlah.setText(modelOrder.getValueAt(row, 5).toString());
+    txtTotalHarga.setText(modelOrder.getValueAt(row, 6).toString());
+    }//GEN-LAST:event_tblOrderMouseClicked
 
     /**
      * @param args the command line arguments
@@ -431,7 +478,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
     private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnTambah;
     private javax.swing.JComboBox<String> cbxKodeBarang;
-    private javax.swing.JComboBox<String> cbxKodeSuplier;
+    private javax.swing.JComboBox<String> cbxKodePelanggan;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -442,7 +489,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable tblOrder;
-    private javax.swing.JTextField txtHargaBeli;
+    private javax.swing.JTextField txtHargaJual;
     private javax.swing.JTextField txtJumlah;
     private javax.swing.JTextField txtKodeOrder;
     private javax.swing.JTextField txtTanggal;
