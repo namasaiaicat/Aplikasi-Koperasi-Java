@@ -25,7 +25,7 @@ public class Pembelian extends javax.swing.JFrame {
     public Pembelian() {
         initComponents();
         
-        modelPembelian = new DefaultTableModel(new Object[]{"Kode", "Tanggal", "Total Barang", "Total Harga"}, 0) {
+        modelPembelian = new DefaultTableModel(new Object[]{"Kode", "Tanggal", "Total Barang", "Total Harga", "Status"}, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
         };
@@ -38,7 +38,9 @@ public class Pembelian extends javax.swing.JFrame {
         
         try {
            Connection conn = Koneksi.getConnection();
-           String sql = "SELECT kode_order, tgl_order, " + "SUM(jumlah) AS total_barang, " + "SUM(total_harga) AS total_harga " + "FROM order_pembelian " + "GROUP BY kode_order, tgl_order";
+           String sql = "SELECT op.kode_order, op.tgl_order, " + "SUM(op.jumlah) AS total_barang, " + "SUM(op.total_harga) AS total_harga, " + 
+                   "CASE WHEN p.kode_order iS NOT NULL THEN 'Sudah Proses' ELSE 'Belum Proses' END AS status " + "FROM order_pembelian op " + 
+                   "LEFT JOIN pembelian p ON op.kode_order = p.kode_order " + "GROUP BY op.kode_order, op.tgl_order, p.kode_order";
            PreparedStatement ps = conn.prepareStatement(sql);
            ResultSet rs = ps.executeQuery();
            while (rs.next()) {
@@ -46,7 +48,8 @@ public class Pembelian extends javax.swing.JFrame {
                rs.getString("kode_order"),
                rs.getString("tgl_order"),
                rs.getString("total_harga"),
-               rs.getString("total_harga")
+               rs.getString("total_harga"),
+               rs.getString("status")
                });
            } 
            conn.close();
@@ -73,7 +76,6 @@ public class Pembelian extends javax.swing.JFrame {
         txtTotalBarang = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         txtTotalHarga = new javax.swing.JTextField();
-        btnEdit = new javax.swing.JButton();
         btnHapus = new javax.swing.JButton();
         btnClear = new javax.swing.JButton();
         btnTambah = new javax.swing.JButton();
@@ -96,18 +98,19 @@ public class Pembelian extends javax.swing.JFrame {
 
         jLabel1.setText("Kode Pembelian");
 
+        txtKode.setEnabled(false);
+
         jLabel2.setText("Tanggal Order");
+
+        txtTanggal.setEnabled(false);
 
         jLabel3.setText("Total Barang");
 
+        txtTotalBarang.setEnabled(false);
+
         jLabel4.setText("Total Harga");
 
-        btnEdit.setText("Edit");
-        btnEdit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEditActionPerformed(evt);
-            }
-        });
+        txtTotalHarga.setEnabled(false);
 
         btnHapus.setText("Hapus");
         btnHapus.addActionListener(new java.awt.event.ActionListener() {
@@ -142,33 +145,31 @@ public class Pembelian extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 656, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(762, 762, 762))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jLabel1)
+                                .addComponent(jLabel2)
+                                .addComponent(jLabel3)
+                                .addComponent(jLabel4)
+                                .addGroup(layout.createSequentialGroup()
                                     .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(txtTotalHarga)
-                            .addComponent(txtTotalBarang)
-                            .addComponent(txtTanggal)
-                            .addComponent(txtKode, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtTotalHarga)
+                                .addComponent(txtTotalBarang)
+                                .addComponent(txtTanggal)
+                                .addComponent(txtKode, javax.swing.GroupLayout.PREFERRED_SIZE, 278, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 552, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(106, 106, 106))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 552, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(106, 106, 106))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(28, Short.MAX_VALUE)
+                .addContainerGap(30, Short.MAX_VALUE)
                 .addComponent(jLabel5)
                 .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -192,20 +193,15 @@ public class Pembelian extends javax.swing.JFrame {
                         .addGap(26, 26, 26)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(btnTambah, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(20, 20, 20)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(btnHapus, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(14, 14, 14)))
                 .addGap(66, 66, 66))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
-
-    }//GEN-LAST:event_btnEditActionPerformed
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
 
@@ -257,7 +253,6 @@ public class Pembelian extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClear;
-    private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnTambah;
     private javax.swing.JLabel jLabel1;
