@@ -10,6 +10,8 @@ import Koneksi.Koneksi;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 /**
  *
@@ -57,6 +59,71 @@ public class Pembelian extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Error : " + e.getMessage());
         }
     }
+    
+    private void Proses() {
+        if (txtKode.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Pilih Order!");
+        }
+        
+//      Cek Status
+        try {
+            Connection conn = Koneksi.getConnection();
+            String sqlCek = "SELECT COUNT(*) FROM pembelian WHERE kode_order=?";
+            PreparedStatement psCek = conn.prepareStatement(sqlCek);
+            psCek.setString(1, selectedKode);
+            ResultSet rsCek = psCek.executeQuery();
+            rsCek.next();
+            if (rsCek.getInt(1) > 0) {
+                JOptionPane.showMessageDialog(this, "Order ini telah di Proses!");
+                conn.close();
+                return;
+            }
+            
+            String sqlSum = "SELECT tgl_order, SUM(jumlah) AS total_barang, " + "SUM(total_harga) AS total_harga " + 
+                    "FROM order_pembelian WHERE kode_order=? GROUP BY tgl_order";
+            PreparedStatement psSum = conn.prepareStatement(sqlSum);
+            psSum.setString(1, selectedKode);
+            ResultSet rsSum = psSum.executeQuery();
+            
+            if (rsSum.next()) {
+                String sqlInsert = "INSERT INTO pembelian (tanggal, kode_order, total_barang, total_harga) VALUES (?, ?, ?, ?)";
+                PreparedStatement psInsert = conn.prepareStatement(sqlInsert);
+                psInsert.setString(1, rsSum.getString("tgl_order"));
+                psInsert.setString(2, selectedKode);
+                psInsert.setString(3, rsSum.getString("total_barang"));
+                psInsert.setString(4, rsSum.getString("total_harga"));
+                psInsert.executeUpdate();
+                
+                String sqlDetail = "SELECT kode_barang, jumlah FROM order_pembelian WHERE kode_order=?";
+                PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
+                psDetail.setString(1, selectedKode);
+                
+                ResultSet rsDetail = psDetail.executeQuery();
+                while (rsDetail.next()) {
+                    String sqlStok  = "UPDATE barang SET jumlah = jumlah + ? WHERE kode_barang=?";
+                    PreparedStatement psStok = conn.prepareStatement(sqlStok);
+                    psStok.setInt(1, rsDetail.getInt("jumlah"));
+                    psStok.setString(2  , rsDetail.getString("kode_barang"));
+                    psStok.executeUpdate();
+                }
+                
+                JOptionPane.showMessageDialog(this, "Berhasil! Stok  barang sudah diupdate!");
+                bersihForm();
+                loadPembelian();
+            }
+            conn.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error Proses : " + e.getMessage());
+        }
+    }
+    private void bersihForm() {
+        txtKode.setText("");
+        txtTanggal.setText("");
+        txtTotalBarang.setText("");
+        txtTotalHarga.setText("");
+        selectedKode = "";
+        tblPembelian.clearSelection();
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -94,6 +161,11 @@ public class Pembelian extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tblPembelian.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblPembelianMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblPembelian);
 
         jLabel1.setText("Kode Pembelian");
@@ -212,8 +284,18 @@ public class Pembelian extends javax.swing.JFrame {
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed
-
+    Proses();
     }//GEN-LAST:event_btnTambahActionPerformed
+
+    private void tblPembelianMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblPembelianMouseClicked
+    int row = tblPembelian.getSelectedRow();
+    if ( row < 0 ) return;
+    selectedKode = modelPembelian.getValueAt(row, 0).toString();
+    txtKode.setText(selectedKode);
+    txtTanggal.setText(modelPembelian.getValueAt(row, 1).toString());
+    txtTotalBarang.setText(modelPembelian.getValueAt(row, 2).toString());
+    txtTotalHarga.setText(modelPembelian.getValueAt(row, 3).toString());
+    }//GEN-LAST:event_tblPembelianMouseClicked
 
     /**
      * @param args the command line arguments

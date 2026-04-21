@@ -425,14 +425,15 @@ public class OrderPembelian extends javax.swing.JFrame {
        
         try {
             try (Connection conn = Koneksi.getConnection()) {
-                String sql = "UPDATE order_pembelian SET kode_barang=?, tgl_order=?, kode_suplier=?, harga_beli=?, total_harga=? WHERE kode_order=?";
+                String sql = "UPDATE order_pembelian SET kode_barang=?, tgl_order=?, kode_suplier=?, harga_beli=?, jumlah=?, total_harga=? WHERE kode_order=?";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, kodeBarang);
                 ps.setString(2, txtTanggal.getText());
                 ps.setString(3, kodeSuplier);
                 ps.setString(4, txtHargaBeli.getText());
-                ps.setString(5, txtTotalHarga.getText());
-                ps.setString(6, txtKodeOrder.getText());
+                ps.setInt(5, Integer.parseInt(txtJumlah.getText()));
+                ps.setString(6, txtTotalHarga.getText());
+                ps.setString(7, txtKodeOrder.getText());
                 ps.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Update Berhasil!");
                 loadBarang();
@@ -463,6 +464,23 @@ public class OrderPembelian extends javax.swing.JFrame {
     txtHargaBeli.setText(modelOrder.getValueAt(row, 4).toString());
     txtJumlah.setText(modelOrder.getValueAt(row, 5).toString());
     txtTotalHarga.setText(modelOrder.getValueAt(row, 6).toString());
+    
+    String kodeSuplier = modelOrder.getValueAt(row, 2).toString();
+    String kodeBarang = modelOrder.getValueAt(row, 3).toString();
+    
+        for (int i = 0; i < cbxKodeSuplier.getItemCount(); i++) {
+        if (cbxKodeSuplier.getItemAt(i).startsWith(kodeSuplier)) {
+            cbxKodeSuplier.setSelectedIndex(i);
+            break;
+        }
+    }
+    
+    for (int i = 0; i < cbxKodeBarang.getItemCount(); i++) {
+        if (cbxKodeBarang.getItemAt(i).startsWith(kodeBarang)) {
+            cbxKodeBarang.setSelectedIndex(i);
+            break;
+        }
+    }
     }//GEN-LAST:event_tblOrderMouseClicked
 
     /**
