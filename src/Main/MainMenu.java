@@ -16,6 +16,13 @@ public class MainMenu extends javax.swing.JFrame {
      */
     public MainMenu() {
         initComponents();
+        aturAkses();
+    }
+    
+    private void aturAkses() {
+        if (Session.role.equals("pegawai")) {
+            Master.setVisible(false);
+        }
     }
 
     /**
@@ -29,11 +36,11 @@ public class MainMenu extends javax.swing.JFrame {
 
         jLabel1 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
+        Master = new javax.swing.JMenu();
         Barang = new javax.swing.JMenuItem();
         Pelanggan = new javax.swing.JMenuItem();
         Suplier = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        Transaksi = new javax.swing.JMenu();
         Pembelian = new javax.swing.JMenuItem();
         Penjualan = new javax.swing.JMenuItem();
         orderPembelian = new javax.swing.JMenuItem();
@@ -52,7 +59,7 @@ public class MainMenu extends javax.swing.JFrame {
         jMenuBar1.setMinimumSize(new java.awt.Dimension(88, 40));
         jMenuBar1.setPreferredSize(new java.awt.Dimension(88, 40));
 
-        jMenu1.setText("Master");
+        Master.setText("Master");
 
         Barang.setText("Barang");
         Barang.addActionListener(new java.awt.event.ActionListener() {
@@ -60,7 +67,7 @@ public class MainMenu extends javax.swing.JFrame {
                 BarangActionPerformed(evt);
             }
         });
-        jMenu1.add(Barang);
+        Master.add(Barang);
 
         Pelanggan.setText("Pelanggan");
         Pelanggan.addActionListener(new java.awt.event.ActionListener() {
@@ -68,7 +75,7 @@ public class MainMenu extends javax.swing.JFrame {
                 PelangganActionPerformed(evt);
             }
         });
-        jMenu1.add(Pelanggan);
+        Master.add(Pelanggan);
 
         Suplier.setText("Suplier");
         Suplier.addActionListener(new java.awt.event.ActionListener() {
@@ -76,11 +83,11 @@ public class MainMenu extends javax.swing.JFrame {
                 SuplierActionPerformed(evt);
             }
         });
-        jMenu1.add(Suplier);
+        Master.add(Suplier);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(Master);
 
-        jMenu2.setText("Transaksi");
+        Transaksi.setText("Transaksi");
 
         Pembelian.setText("Pembelian");
         Pembelian.addActionListener(new java.awt.event.ActionListener() {
@@ -88,7 +95,7 @@ public class MainMenu extends javax.swing.JFrame {
                 PembelianActionPerformed(evt);
             }
         });
-        jMenu2.add(Pembelian);
+        Transaksi.add(Pembelian);
 
         Penjualan.setText("Penjualan");
         Penjualan.addActionListener(new java.awt.event.ActionListener() {
@@ -96,7 +103,7 @@ public class MainMenu extends javax.swing.JFrame {
                 PenjualanActionPerformed(evt);
             }
         });
-        jMenu2.add(Penjualan);
+        Transaksi.add(Penjualan);
 
         orderPembelian.setText("Order Pembelian");
         orderPembelian.addActionListener(new java.awt.event.ActionListener() {
@@ -104,7 +111,7 @@ public class MainMenu extends javax.swing.JFrame {
                 orderPembelianActionPerformed(evt);
             }
         });
-        jMenu2.add(orderPembelian);
+        Transaksi.add(orderPembelian);
 
         orderPenjualan.setText("Order Penjualan");
         orderPenjualan.addActionListener(new java.awt.event.ActionListener() {
@@ -112,9 +119,9 @@ public class MainMenu extends javax.swing.JFrame {
                 orderPenjualanActionPerformed(evt);
             }
         });
-        jMenu2.add(orderPenjualan);
+        Transaksi.add(orderPenjualan);
 
-        jMenuBar1.add(jMenu2);
+        jMenuBar1.add(Transaksi);
 
         jMenu3.setText("Laporan");
 
@@ -256,13 +263,13 @@ public class MainMenu extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Barang;
     private javax.swing.JMenuItem Laporan;
+    private javax.swing.JMenu Master;
     private javax.swing.JMenuItem Pelanggan;
     private javax.swing.JMenuItem Pembelian;
     private javax.swing.JMenuItem Penjualan;
     private javax.swing.JMenuItem Suplier;
+    private javax.swing.JMenu Transaksi;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
