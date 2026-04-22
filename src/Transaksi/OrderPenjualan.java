@@ -339,7 +339,7 @@ public class OrderPenjualan extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(82, 82, 82)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 621, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
 
         pack();
@@ -351,11 +351,28 @@ public class OrderPenjualan extends javax.swing.JFrame {
         return;
     }
     
+    
+    
     String kodeBarang = ((String) cbxKodeBarang.getSelectedItem()).split(" - ")[0];
     String kodePelanggan = ((String) cbxKodePelanggan.getSelectedItem()).split(" - ")[0];
+    int jumlahBeli = Integer.parseInt(txtJumlah.getText());
         
     try {
         Connection conn = Koneksi.getConnection();
+        String sqlCek = "SELECT jumlah FROM barang WHERE kode_barang=?";
+        PreparedStatement psCek = conn.prepareStatement(sqlCek);
+        psCek.setString(1, kodeBarang);
+        ResultSet rsCek = psCek.executeQuery();
+        
+        if (rsCek.next()) {
+            int jumlahBarang = rsCek.getInt("jumlah");
+            
+            if (jumlahBeli > jumlahBarang) {
+                JOptionPane.showMessageDialog(this, "Stok tidak mencukupi");
+                return;
+            }
+        }
+
         String sql = "INSERT INTO order_penjualan (kode_order, kode_barang, tgl_order, kode_pelanggan, harga_jual, jumlah, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, txtKodeOrder.getText());
