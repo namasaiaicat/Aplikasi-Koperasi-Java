@@ -7,6 +7,7 @@ package Transaksi;
 import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
 import Koneksi.Koneksi;
+import java.awt.HeadlessException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public class Pembelian extends javax.swing.JFrame {
                modelPembelian.addRow(new Object[] {
                rs.getString("kode_order"),
                rs.getString("tgl_order"),
-               rs.getString("total_harga"),
+               rs.getString("total_barang"),
                rs.getString("total_harga"),
                rs.getString("status")
                });
@@ -114,6 +115,49 @@ public class Pembelian extends javax.swing.JFrame {
             conn.close();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error Proses : " + e.getMessage());
+        }
+    }
+    
+    private void hapusPembelian() {
+        if (selectedKode.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Pilih order dlu!");
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "Yakin Hapus?");
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                try (Connection conn = Koneksi.getConnection()) {
+                    String sqlKembalikanStok = "SELECT kode_barang, jumlah FROM order_pembelian WHERE kode_order=?";
+                    PreparedStatement psKembalikanStok = conn.prepareStatement(sqlKembalikanStok);
+                    psKembalikanStok.setString(1, selectedKode);
+                    ResultSet rsKembalikanStok = psKembalikanStok.executeQuery();
+                    while (rsKembalikanStok.next()) {
+                        String sqlStok = "UPDATE barang SET jumlah = jumlah - ? WHERE kode_barang=?";
+                        PreparedStatement psStok = conn.prepareStatement(sqlStok);
+                        psStok.setInt(1, rsKembalikanStok.getInt("jumlah"));
+                        psStok.setString(2,  rsKembalikanStok.getString("kode_barang"));
+                        psStok.executeUpdate();
+                    }
+                    
+//                    String sqlHapus = "DELETE FROM pembelian WHERE kode_order=?";
+//                    PreparedStatement psHapus = conn.prepareStatement(sqlHapus);
+//                    psHapus.setString(1, selectedKode);
+//                    psHapus.executeUpdate();
+//                    
+                                        
+                    String sqlHapusPembelian = "DELETE FROM order_pembelian WHERE kode_order=?";
+                    PreparedStatement psHapusPembelian = conn.prepareStatement(sqlHapusPembelian);
+                    psHapusPembelian.setString(1, selectedKode);
+                    psHapusPembelian.executeUpdate();
+                    
+                    JOptionPane.showMessageDialog(this, "Berhasil Hapus !");
+                    bersihForm();
+                    loadPembelian();
+                }
+            } catch (HeadlessException | SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error Hapus : " + e.getMessage());
+        }
         }
     }
     private void bersihForm() {
@@ -276,11 +320,11 @@ public class Pembelian extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
-
+    hapusPembelian();
     }//GEN-LAST:event_btnHapusActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // TODO add your handling code here:
+    bersihForm();
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTambahActionPerformed
